@@ -1,0 +1,29 @@
+{% extends "accounts/base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>{{ visit.title }}</h2>
+
+    <ul class="list-group mt-3">
+        <li class="list-group-item">
+            <strong>Tipo:</strong> {{ visit.get_visit_type_display }}
+        </li>
+        <li class="list-group-item">
+            <strong>Estado:</strong> {{ visit.status.name }}
+        </li>
+        <li class="list-group-item">
+            <strong>Gestor:</strong> {{ visit.gestor.name }}
+        </li>
+        <li class="list-group-item">
+            <strong>Inicio:</strong> {{ visit.start_datetime }}
+        </li>
+        <li class="list-group-item">
+            <strong>Fin:</strong> {{ visit.end_datetime }}
+        </li>
+    </ul>
+
+    <a href="{% url 'work_plan_calendar' %}" class="btn btn-secondary mt-3">
+        Volver al calendario
+    </a>
+</div>
+{% endblock %}

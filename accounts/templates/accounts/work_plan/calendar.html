@@ -1,0 +1,99 @@
+{% extends "accounts/base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid mt-4 px-4">
+    <h1>Plan de Trabajo Diario</h1>
+    <div class="row mb-3">
+    <div class="col-md-4">
+        <label class="form-label">Gestor</label>
+        <select class="form-select" id="filterGestor">
+            <option value="">Todos</option>
+        </select>
+    </div>
+
+    <div class="col-md-4">
+        <label class="form-label">Tipo</label>
+        <select class="form-select" id="filterType">
+            <option value="">Todos</option>
+            <option value="medico">Médico</option>
+            <option value="institucion">Institución</option>
+        </select>
+    </div>
+
+    <div class="col-md-4">
+        <label class="form-label">Estado</label>
+        <select class="form-select" id="filterStatus">
+            <option value="">Todos</option>
+        </select>
+    </div>
+</div>
+
+    <div id="calendar"></div>
+</div>
+<!-- Modal Crear / Editar Visita -->
+<div class="modal fade" id="visitModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Visita</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+
+      <div class="modal-body">
+        <form id="visitForm">
+
+          <input type="hidden" id="visitId">
+
+          <div class="mb-3">
+            <label class="form-label">Título</label>
+            <input type="text" class="form-control" id="title" required>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Gestor</label>
+            <select class="form-select" id="gestor"></select>
+          </div>
+<div class="mb-3">
+  <label class="form-label">Tipo de visita</label>
+  <select class="form-select" id="type" required>
+      <option value="medico">Médico</option>
+      <option value="institucion">Institución</option>
+  </select>
+</div>
+
+          <div class="mb-3">
+            <label class="form-label">Estado</label>
+            <select class="form-select" id="status"></select>
+          </div>
+
+          <div class="row">
+            <div class="col">
+              <label class="form-label">Inicio</label>
+              <input type="time" class="form-control" id="start">
+            </div>
+            <div class="col">
+              <label class="form-label">Fin</label>
+              <input type="time" class="form-control" id="end">
+            </div>
+          </div>
+
+        </form>
+      </div>
+
+     <div class="modal-footer">
+    <button class="btn btn-danger me-auto" id="deleteVisit" style="display:none">
+        Eliminar
+    </button>
+    <button class="btn btn-primary" id="saveVisit">Guardar</button>
+</div>
+
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/calendar.js' %}"></script>
+{% endblock %}
