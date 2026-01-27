@@ -2,6 +2,7 @@ let modal;
 let selectedDate = null;
 
 function loadSelect(url, elementId, selectedId = null) {
+    
     fetch(url)
         .then(res => res.json())
         .then(data => {
@@ -15,6 +16,8 @@ function loadSelect(url, elementId, selectedId = null) {
 }
 
 function loadFilterSelect(url, selectId) {
+     const select = document.getElementById(selectId);
+    if (!select) return; 
     fetch(url)
         .then(res => res.json())
         .then(data => {
@@ -27,11 +30,16 @@ function loadFilterSelect(url, selectId) {
 
 
 document.addEventListener('DOMContentLoaded', function () {
-    modal = new bootstrap.Modal(document.getElementById('visitModal'));
+    const calendarEl = document.getElementById('calendar');
+    let modal = null; 
+        const modalElement = document.getElementById('visitModal');
+    if (modalElement) {
+        modal = new bootstrap.Modal(modalElement);
+    } 
     loadFilterSelect('/api/gestores/', 'filterGestor');
 loadFilterSelect('/api/status/', 'filterStatus');
 
-    const calendarEl = document.getElementById('calendar');
+    
 
     const calendar = new FullCalendar.Calendar(calendarEl, {
         initialView: 'dayGridMonth',
@@ -59,6 +67,7 @@ loadFilterSelect('/api/status/', 'filterStatus');
 
        eventClick: function (info) {
            info.jsEvent.preventDefault();
+            if (!modal) return;
     fetch(`/api/work-plan/visit/${info.event.id}/`)
         .then(res => res.json())
         .then(data => {
@@ -108,15 +117,16 @@ eventDidMount: function(info) {
 
 events: function(fetchInfo, successCallback) {
 
-    const gestor = document.getElementById('filterGestor').value;
-    const status = document.getElementById('filterStatus').value;
-    const type = document.getElementById('filterType').value;
+    const gestorEl = document.getElementById('filterGestor');
+    const statusEl = document.getElementById('filterStatus');
+    const typeEl = document.getElementById('filterType');
 
     const params = new URLSearchParams();
 
-    if (gestor) params.append('gestor', gestor);
-    if (status) params.append('status', status);
-    if (type) params.append('type', type);
+  
+    if (gestorEl && gestorEl.value) params.append('gestor', gestorEl.value);
+    if (statusEl && statusEl.value) params.append('status', statusEl.value);
+    if (typeEl && typeEl.value) params.append('type', typeEl.value);
 
     fetch('/api/work-plan/events/?' + params.toString())
         .then(res => res.json())
@@ -127,42 +137,52 @@ events: function(fetchInfo, successCallback) {
     });
 
     calendar.render();
-    ['filterGestor', 'filterStatus', 'filterType'].forEach(id => {
-    document.getElementById(id).addEventListener('change', () => {
-        calendar.refetchEvents();
-    });
+['filterGestor', 'filterStatus', 'filterType'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) {
+        el.addEventListener('change', () => {
+            calendar.refetchEvents();
+        });
+    }
 });
 
 
-document.getElementById('saveVisit').addEventListener('click', function () {
-    const visitId = document.getElementById('visitId').value;
+const saveVisitBtn = document.getElementById('saveVisit');
 
-    const payload = {
-        title: document.getElementById('title').value,
-        gestor: document.getElementById('gestor').value,
-        status: document.getElementById('status').value,
-        start: selectedDate + 'T' + document.getElementById('start').value,
-        end: selectedDate + 'T' + document.getElementById('end').value,
-         type: document.getElementById('type').value,
-    };
+if (saveVisitBtn) {
+    saveVisitBtn.addEventListener('click', function () {
 
-    const url = visitId
-        ? `/api/work-plan/update/${visitId}/`
-        : '/api/work-plan/create/';
+        const visitId = document.getElementById('visitId').value;
 
-    fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-    })
-    .then(res => res.json())
-    .then(() => {
-        modal.hide();
-        calendar.refetchEvents();
+        const payload = {
+            title: document.getElementById('title').value,
+            gestor: document.getElementById('gestor').value,
+            status: document.getElementById('status').value,
+            start: selectedDate + 'T' + document.getElementById('start').value,
+            end: selectedDate + 'T' + document.getElementById('end').value,
+            type: document.getElementById('type').value,
+        };
+
+        const url = visitId
+            ? `/api/work-plan/update/${visitId}/`
+            : '/api/work-plan/create/';
+
+        fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        })
+        .then(res => res.json())
+        .then(() => {
+            modal.hide();
+            calendar.refetchEvents();
+        });
     });
-});
+}
 
-document.getElementById('deleteVisit').addEventListener('click', function () {
+const delVisitButton= document.getElementById('deleteVisit')
+if(delVisitButton){
+delVisitButton.addEventListener('click', function () {
     const visitId = document.getElementById('visitId').value;
 
     if (!visitId) return;
@@ -177,6 +197,81 @@ document.getElementById('deleteVisit').addEventListener('click', function () {
         modal.hide();
         calendar.refetchEvents();
     });
+});
+}
+
+const userModal = new bootstrap.Modal(
+    document.getElementById('userModal')
+);
+
+document.getElementById('openUserModal')
+?.addEventListener('click', () => userModal.show());
+
+document.getElementById('saveUser')
+?.addEventListener('click', () => {
+
+    const payload = {
+        username: document.getElementById('username').value,
+        password: document.getElementById('password').value,
+        role: document.getElementById('role').value
+    };
+
+    fetch('/api/users/create/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+    })
+    .then(res => res.json())
+    .then(() => {
+        userModal.hide();
+        alert('Usuario creado');
+    });
+});
+
+let gestores = [];
+
+fetch('/api/gestores/')
+  .then(res => res.json())
+  .then(data => {
+    gestores = data;
+  });
+
+const searchInput = document.getElementById('gestorSearch');
+const resultsBox = document.getElementById('gestorResults');
+const hiddenInput = document.getElementById('filterGestor');
+
+searchInput.addEventListener('input', function () {
+  const value = this.value.toLowerCase();
+  resultsBox.innerHTML = '';
+
+  if (!value) {
+    resultsBox.classList.add('d-none');
+    hiddenInput.value = '';
+    calendar.refetchEvents();
+    return;
+  }
+
+  const filtered = gestores.filter(g =>
+    g.name.toLowerCase().includes(value)
+  );
+
+  filtered.forEach(g => {
+    const item = document.createElement('button');
+    item.type = 'button';
+    item.className = 'list-group-item list-group-item-action';
+    item.textContent = g.name;
+
+    item.addEventListener('click', () => {
+      searchInput.value = g.name;
+      hiddenInput.value = g.id;
+      resultsBox.classList.add('d-none');
+      calendar.refetchEvents();
+    });
+
+    resultsBox.appendChild(item);
+  });
+
+  resultsBox.classList.remove('d-none');
 });
 
 

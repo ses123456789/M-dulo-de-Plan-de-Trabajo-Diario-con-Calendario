@@ -1,5 +1,6 @@
 from django.urls import path
-from .views import events_api,calendar_view, view_visit, create_visit_api,gestores_api,status_api,visit_detail_api, update_visit_api,delete_visit_api
+from .views import events_api,calendar_view, view_visit, create_visit_api,gestores_api,status_api,visit_detail_api, update_visit_api,delete_visit_api, create_user_api
+from django.contrib.auth import views as auth_views
 
 
 urlpatterns = [
@@ -28,5 +29,8 @@ path(
     delete_visit_api,
     name='delete_visit_api'
 ),
+  path('login/', auth_views.LoginView.as_view(template_name='accounts/login.html'), name='login'),
+    path('logout/', auth_views.LogoutView.as_view(), name='logout'),
+    path('api/users/create/', create_user_api, name='create_user_api'),
 
 ]

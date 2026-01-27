@@ -1,7 +1,7 @@
 from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, get_object_or_404
-from dbmedical.models import Visit, Gestor, Status
+from dbmedical.models import Visit, Gestor, Status,User
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.dateparse import parse_datetime
 import json
@@ -32,7 +32,8 @@ def events_api(request):
     gestor = request.GET.get('gestor')
     status = request.GET.get('status')
     visit_type = request.GET.get('type')
-
+    if not request.user.is_superuser:
+        visits = visits.filter(gestor__user=request.user)
     if gestor:
         visits = visits.filter(gestor_id=gestor)
 
@@ -70,6 +71,8 @@ def view_visit(request, visit_id):
 @csrf_exempt
 @login_required
 def create_visit_api(request):
+    if not request.user.is_superuser:
+        return JsonResponse({"error": "Unauthorized"},status= 403)
     if request.method == "POST":
         data = json.loads(request.body)
 
@@ -136,3 +139,24 @@ def status_api(request):
     data = list(Status.objects.values('id', 'name'))
     return JsonResponse(data, safe=False)
    
+@csrf_exempt
+@login_required
+def create_user_api(request):
+    if not request.user.is_staff:
+        return JsonResponse({"error": "Unauthorized"}, status=403)
+
+    data = json.loads(request.body)
+
+    user = User.objects.create_user(
+        username=data["username"],
+        password=data["password"]
+    )
+
+    if data["role"] == "admin":
+        user.is_staff = True
+        user.is_superuser = True
+        user.save()
+    else:
+        Gestor.objects.create(user=user, name=data["username"])
+
+    return JsonResponse({"success": True})
