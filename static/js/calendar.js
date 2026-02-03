@@ -65,30 +65,12 @@ loadFilterSelect('/api/status/', 'filterStatus');
 },
 
 
-       eventClick: function (info) {
-           info.jsEvent.preventDefault();
-            if (!modal) return;
-    fetch(`/api/work-plan/visit/${info.event.id}/`)
-        .then(res => res.json())
-        .then(data => {
-            selectedDate = data.start.split('T')[0];
-            document.getElementById('visitId').value = data.id;
-            document.getElementById('title').value = data.title;
-            document.getElementById('type').value = data.type;
-
-            const start = data.start.split('T')[1].substring(0,5);
-            const end = data.end.split('T')[1].substring(0,5);
-
-            document.getElementById('start').value = start;
-            document.getElementById('end').value = end;
-
-            loadSelect('/api/gestores/', 'gestor', data.gestor);
-            loadSelect('/api/status/', 'status', data.status);
-            document.getElementById('deleteVisit').style.display = 'inline-block';
-
-            modal.show();
-        });
+      eventClick: function (info) {
+    info.jsEvent.preventDefault();
+    info.jsEvent.stopPropagation();
+    window.location.href = `/work-plan/visits/${info.event.id}/`;;
 },
+
 
 eventDidMount: function(info) {
 

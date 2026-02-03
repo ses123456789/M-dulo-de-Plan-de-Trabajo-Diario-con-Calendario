@@ -1,0 +1,69 @@
+{% extends "accounts/base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Editar visita</h2>
+
+    <form method="post">
+        {% csrf_token %}
+
+        <div class="mb-3">
+            <label>Título</label>
+            <input class="form-control" name="title" value="{{ visit.title }}">
+        </div>
+
+        <div class="mb-3">
+            <label>Tipo</label>
+            <select name="type" class="form-select">
+                <option value="medico" {% if visit.visit_type == "medico" %}selected{% endif %}>Médico</option>
+                <option value="institucion" {% if visit.visit_type == "institucion" %}selected{% endif %}>Institución</option>
+            </select>
+        </div>
+
+       <div class="mb-3">
+    <label>Gestor</label>
+    <select name="gestor" class="form-select">
+        {% for g in gestores %}
+            <option value="{{ g.id }}"
+                {% if g.id == visit.gestor.id %}selected{% endif %}>
+                {{ g.name }}
+            </option>
+        {% endfor %}
+    </select>
+</div>
+
+
+      <div class="mb-3">
+    <label>Estado</label>
+    <select name="status" class="form-select">
+        {% for s in statuses %}
+            <option value="{{ s.id }}"
+                {% if s.id == visit.status.id %}selected{% endif %}>
+                {{ s.name }}
+            </option>
+        {% endfor %}
+    </select>
+</div>
+
+
+        <div class="mb-3">
+            <label>Inicio</label>
+            <input type="datetime-local"
+                   name="start"
+                   class="form-control"
+                   value="{{ visit.start_datetime|date:'Y-m-d\\TH:i' }}">
+        </div>
+
+        <div class="mb-3">
+            <label>Fin</label>
+            <input type="datetime-local"
+                   name="end"
+                   class="form-control"
+                   value="{{ visit.end_datetime|date:'Y-m-d\\TH:i' }}">
+        </div>
+
+        <button class="btn btn-success">Guardar cambios</button>
+        <a href="{% url 'view_visit' visit.id %}" class="btn btn-secondary">Cancelar</a>
+    </form>
+</div>
+{% endblock %}
